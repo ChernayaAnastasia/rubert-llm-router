@@ -196,6 +196,9 @@ python scripts/run_stage5.py --agent-only  # 5B: гибрид на eval
 
 Сырые данные в формате JSONL находятся в `data/raw/` (`DATA_PATH` в `utils/config.py`). EDA выполнена в `notebooks/eda.ipynb`, итоговые артефакты — в `data/processed/`.
 
+![](reports/eda_reports/fig1_class_distribution.png)
+
+
 ### Схема parquet (`KEEP_COLS`)
 
 |Колонка|Описание|
@@ -211,6 +214,9 @@ python scripts/run_stage5.py --agent-only  # 5B: гибрид на eval
 |`COL_PRICELIST`|Прайс-лист (плейсхолдер `No pricelist.` при отсутствии, ~41% строк)|
 
 Пропуски в `COL_REVIEWS` (~4%) и `COL_PRICELIST` (~41%) не отбрасываются: связь «пропуск ↔ класс» статистически слабая (Cramér's V < 0.1). Routing к LLM-агенту также не основан на наличии/отсутствии полей — accuracy при «оба поля пусты» не хуже полного контекста (Δ ≈ −0.02 по EDA).
+
+Ниже представлено распределение таргета по сплитам для обучения, валидации и теста:
+![](reports/eda_reports/fig11_split_class_balance.png)
 
 ### Формирование текстов на лету (`utils/data_loader.py`)
 
@@ -240,272 +246,257 @@ df = attach_org_text(pd.read_parquet("data/processed/val_baseline.parquet"))
 
 ### Stage 1 — TF-IDF референс
 
-**Модуль:** `utils/stage1\_baseline.py` | **Ноутбук:** `notebooks/stage1\_baseline.ipynb`  
-**Время:** \~20 мин (CPU)
+**Модуль:** `utils/stage1_baseline.py` | **Ноутбук:** `notebooks/stage1_baseline.ipynb`  
+**Время:** ~20 мин (CPU)
 
 ```bash
-python scripts/run\_stage1.py
+python scripts/run_stage1.py
 ```
 
-TF-IDF (50k фичей, ngram 1–2, sublinear TF) + LogisticRegression на `combined\_text`. Служит нижней границей; в гибридный пайплайн не входит. Модель и предсказания на диск не пишутся.
+TF-IDF (50k фичей, ngram 1–2, sublinear TF) + LogisticRegression на `combined_text`. Служит нижней границей; в гибридный пайплайн не входит. Модель и предсказания на диск не пишутся.
 
-**Выход:** `reports/stage1\_baseline/metrics.json` — val accuracy \~0.63–0.65, macro-F1 \~0.62–0.64.
+**Выход:** `reports/stage1_baseline/metrics.json` — val accuracy ~0.63–0.65, macro-F1 ~0.62–0.64.
 
-\---
+---
 
 ### Stage 2 — Fine-tune RuModernBERT + Temperature Scaling
 
-**Модуль:** `utils/stage2\_bert.py` | **Ноутбук:** `notebooks/stage2\_bert\_finetune.ipynb` (Colab/GPU)
+**Модуль:** `utils/stage2_bert.py` | **Ноутбук:** `notebooks/stage2_bert_finetune.ipynb` (Colab/GPU)
 
 ```bash
-python scripts/run\_stage2.py \[--epochs 3] \[--batch-size 16] \[--lr 2e-5]
-                             \[--no-fp16] \[--skip-train] \[--skip-calibration]
-                             \[--early-stopping-patience 1] \[--no-early-stopping]
-                             \[--resume-checkpoint PATH] \[--no-auto-resume]
+python scripts/run_stage2.py [--epochs 3] [--batch-size 16] [--lr 2e-5]
+                             [--no-fp16] [--skip-train] [--skip-calibration]
+                             [--early-stopping-patience 1] [--no-early-stopping]
+                             [--resume-checkpoint PATH] [--no-auto-resume]
 ```
 
 Пайплайн:
 
-1. Загрузка train / val / OOD, формирование `org\_text`
+1. Загрузка train / val / OOD, формирование `org_text`
 2. Проверка меток `{0,1}`, train > 20k строк, статистика длин токенов (p50/p90/p95)
-3. Fine-tune: 3 эпохи, batch 16, lr 2e-5, `eval\_strategy='epoch'`, best checkpoint по accuracy
+3. Fine-tune: 3 эпохи, batch 16, lr 2e-5, `eval_strategy='epoch'`, best checkpoint по accuracy
 4. Temperature scaling на val logits → `models/bert/calibration.json`, reliability diagrams
-5. Сохранение `bert\_val\_preds.parquet`, `bert\_ood\_preds.parquet`
+5. Сохранение `bert_val_preds.parquet`, `bert_ood_preds.parquet`
 
 Ключевые артефакты:
 
 |Файл|Содержимое|
 |-|-|
-|`models/bert/best\_checkpoint/`|Веса модели|
+|`models/bert/best_checkpoint/`|Веса модели|
 |`models/bert/calibration.json`|Температура T, NLL и ECE до/после scaling|
-|`predictions/bert\_val\_preds.parquet`|`bert\_pred`, `bert\_proba1` (калиброванные), `bert\_correct`|
-|`predictions/bert\_ood\_preds.parquet`|То же для OOD-сплита|
-|`reports/stage2\_bert/metrics.json`|Val accuracy \~0.74–0.80, macro-F1 \~0.73–0.79|
-|`reports/stage2\_bert/reliability\_\*.png`|Reliability diagrams до/после calibration|
+|`predictions/bert_val_preds.parquet`|`bert_pred`, `bert_proba1` (калиброванные), `bert_correct`|
+|`predictions/bert_ood_preds.parquet`|То же для OOD-сплита|
+|`reports/stage2_bert/metrics.json`|Val accuracy ~0.74–0.80, macro-F1 ~0.73–0.79|
+|`reports/stage2_bert/reliability_*.png`|Reliability diagrams до/после calibration|
 
-> Все `bert\_proba1` в parquet — калиброванные (если не передан `--skip-calibration`). Температура подбирается один раз и применяется к val, OOD и eval.
-
-\---
+> Все `bert_proba1` в parquet — калиброванные (если не передан `--skip-calibration`). Температура подбирается один раз и применяется к val, OOD и eval.
 
 ### Stage 3 — Error Analysis и порог routing
 
-**Модуль:** `utils/stage3\_error\_analysis.py` | **Ноутбук:** `notebooks/stage3\_error\_analysis.ipynb`  
-**Время:** \~2–3 ч (включая ручную разметку)
+**Модуль:** `utils/stage3_error_analysis.py` | **Ноутбук:** `notebooks/stage3_error_analysis.ipynb`  
+**Время:** ~2–3 ч (включая ручную разметку)
 
 ```bash
-python scripts/run\_stage3.py \[--threshold 0.75]
+python scripts/run_stage3.py [--threshold 0.75]
 ```
 
-Этап решает два вопроса: (1) при каком пороге `bert\_max\_proba` передавать пример LLM-агенту; (2) нужен ли Tavily или достаточно только LLM.
+Этап решает два вопроса: (1) при каком пороге `bert_max_proba` передавать пример LLM-агенту; (2) нужен ли Tavily или достаточно только LLM.
 
-**Подбор порога.** Первый порог с coverage ≥ 70% и accuracy на уверенных ≥ overall + 5 pp. Если такой не найден — используется `CONFIDENCE\_THRESHOLD\_DEFAULT = 0.75`. Routing всегда по `bert\_max\_proba = max(bert\_proba1, 1 − bert\_proba1)`, не по сырому `bert\_proba1`.
+**Подбор порога.** Первый порог с coverage ≥ 70% и accuracy на уверенных ≥ overall + 5 pp. Если такой не найден — используется `CONFIDENCE_THRESHOLD_DEFAULT = 0.75`. Routing всегда по `bert_max_proba = max(bert_proba1, 1 − bert_proba1)`, не по сырому `bert_proba1`.
 
-**Ручная taxonomy ошибок.** Из ошибок BERT на val отбирается \~96 строк (`bert\_errors\_sample.csv`): приоритет — high-confidence ошибки (`bert\_max\_proba ≥ 0.75`), стратификация по классу TARGET. Размер выборки по формуле Кохрана: p ≈ 0.30, доверие 95%, допуск ±10 pp. Категории разметки: `requires\_search`, `hard\_semantic`, `fact\_verification`, `label\_noise`, `other`. Если `searchable\_share` > 30% — `agent\_architecture = with\_tavily`, иначе `= llm\_only`.
+**Ручная taxonomy ошибок.** Из ошибок BERT на val отбирается ~96 строк (`bert_errors_sample.csv`): приоритет — high-confidence ошибки (`bert_max_proba ≥ 0.75`), стратификация по классу TARGET. Размер выборки по формуле Кохрана: p ≈ 0.30, доверие 95%, допуск ±10 pp. Категории разметки: `requires_search`, `hard_semantic`, `fact_verification`, `label_noise`, `other`. Если `searchable_share` > 30% — `agent_architecture = with_tavily`, иначе `= llm_only`.
 
 Артефакты:
 
 |Файл|Содержимое|
 |-|-|
-|`predictions/val\_merged\_preds.parquet`|Val + `bert\_pred`, `bert\_proba1`, `bert\_correct`, `bert\_max\_proba` → вход Stage 4|
-|`reports/stage3\_error\_analysis/comparison.json`|Порог, T, taxonomy, `searchable\_share`, `agent\_architecture`, сравнение моделей|
-|`reports/stage3\_error\_analysis/fig\_accuracy\_coverage.png`|Accuracy vs coverage, coverage vs threshold|
-|`reports/stage3\_error\_analysis/bert\_errors\_sample.csv`|\~96 строк для ручной разметки|
-
-\---
+|`predictions/val_merged_preds.parquet`|Val + `bert_pred`, `bert_proba1`, `bert_correct`, `bert_max_proba` → вход Stage 4|
+|`reports/stage3_error_analysis/comparison.json`|Порог, T, taxonomy, `searchable_share`, `agent_architecture`, сравнение моделей|
+|`reports/stage3_error_analysis/fig_accuracy_coverage.png`|Accuracy vs coverage, coverage vs threshold|
+|`reports/stage3_error_analysis/bert_errors_sample.csv`|~96 строк для ручной разметки|
 
 ### Stage 4 — Гибридная система на val
 
-**Модули:** `utils/stage4\_agent.py` (оркестрация) + `agent/` (LLM-агент) | **Ноутбук:** `notebooks/stage4\_agent.ipynb`
+**Модули:** `utils/stage4_agent.py` (оркестрация) + `agent/` (LLM-агент) | **Ноутбук:** `notebooks/stage4_agent.ipynb`
 
 ```bash
-python scripts/run\_stage4.py \[--sample 50] \[--sleep 0.2] \[--model MODEL\_NAME]
+python scripts/run_stage4.py [--sample 50] [--sleep 0.2] [--model MODEL_NAME]
 ```
 
-Вход: `predictions/val\_merged\_preds.parquet` (предпочтительно) или `bert\_val\_preds.parquet` + `enrich\_bert\_predictions()`. Порог читается из `comparison.json` через `utils/bert\_routing.load\_confidence\_threshold()`.
+Вход: `predictions/val_merged_preds.parquet` (предпочтительно) или `bert_val_preds.parquet` + `enrich_bert_predictions()`. Порог читается из `comparison.json` через `utils/bert_routing.load_confidence_threshold()`.
 
-Граф LangGraph (`agent/graph.py`): `bert\_route` → при высокой уверенности `END` (pred = bert\_pred), при низкой — `decide\_search` → опционально `\[search]` Tavily → `\[classify]` LLM → `END`. Контекст LLM: query, name, address, rubric, reviews, pricelist.
+Граф LangGraph (`agent/graph.py`): `bert_route` → при высокой уверенности `END` (pred = bert_pred), при низкой — `decide_search` → опционально `[search]` Tavily → `[classify]` LLM → `END`. Контекст LLM: query, name, address, rubric, reviews, pricelist.
 
 Артефакты:
 
 |Файл|Содержимое|
 |-|-|
-|`predictions/agent\_low\_conf\_preds.parquet`|Только low-conf: final\_pred, routed\_to, search\_used, tokens, latency|
-|`predictions/hybrid\_val\_preds.parquet`|Весь val: гибридная система|
-|`reports/stage4\_agent/agent\_metrics.json`|Accuracy / F1 гибрида vs BERT-only, доля поиска, стоимость, latency|
-
-\---
+|`predictions/agent_low_conf_preds.parquet`|Только low-conf: final_pred, routed_to, search_used, tokens, latency|
+|`predictions/hybrid_val_preds.parquet`|Весь val: гибридная система|
+|`reports/stage4_agent/agent_metrics.json`|Accuracy / F1 гибрида vs BERT-only, доля поиска, стоимость, latency|
 
 ### Stage 5 — Финальная оценка на eval
 
-> ⚠️ \*\*Открывать `eval\_baseline.parquet` только здесь.\*\* Порог и температура не меняются — они зафиксированы в Stages 2 и 3.
+> **Открывать `eval_baseline.parquet` только здесь.** Порог и температура не меняются — они зафиксированы в Stages 2 и 3.
 
 Этап разбит на две части, которые можно выполнять на разных машинах.
 
-**Stage 5A — BERT inference** (`utils/stage5\_bert.py`, GPU/Colab):
+**Stage 5A — BERT inference** (`utils/stage5_bert.py`, GPU/Colab):
 
 ```bash
-python scripts/run\_stage5.py --bert-only
+python scripts/run_stage5.py --bert-only
 ```
 
-Читает `eval\_baseline.parquet`, строит `org\_text`, применяет модель с калиброванной температурой → `predictions/bert\_eval\_preds.parquet`.
+Читает `eval_baseline.parquet`, строит `org_text`, применяет модель с калиброванной температурой → `predictions/bert_eval_preds.parquet`.
 
-**Stage 5B — гибридная система на eval** (`utils/stage5\_agent.py`):
+**Stage 5B — гибридная система на eval** (`utils/stage5_agent.py`):
 
 ```bash
-python scripts/run\_stage5.py --agent-only
+python scripts/run_stage5.py --agent-only
 ```
-
-Читает `bert\_eval\_preds.parquet`, прогоняет low-confidence через LLM-агент → `predictions/agent\_eval\_preds.parquet` (исторически — выход гибридной системы на всём eval).
+Читает `bert_eval_preds.parquet`, прогоняет low-confidence через LLM-агент → `predictions/agent_eval_preds.parquet`.
 
 Полный прогон на одной машине (отладка):
 
 ```bash
-python scripts/run\_stage5.py \[--sample N] \[--sleep 0.1]
+python scripts/run_stage5.py [--sample N] [--sleep 0.1]
 ```
 
 Финальные артефакты:
 
 |Файл|Содержимое|
 |-|-|
-|`predictions/agent\_eval\_preds.parquet`|Весь eval: гибридная система|
-|`reports/final\_eval/final\_metrics.json`|Accuracy / F1: BERT-only и гибрид на eval|
-|`reports/final\_eval/error\_matrix.json`|Сравнение BERT-only vs гибрид|
-|`reports/final\_eval/fig\_hybrid\_vs\_bert.png`|Визуализация сравнения|
+|`predictions/agent_eval_preds.parquet`|Весь eval: гибридная система|
+|`reports/final_eval/final_metrics.json`|Accuracy / F1: BERT-only и гибрид на eval|
+|`reports/final_eval/error_matrix.json`|Сравнение BERT-only vs гибрид|
+|`reports/final_eval/fig_hybrid_vs_bert.png`|Визуализация сравнения|
 
-\---
-
-## 8\. Конфигурация
+## 8. Конфигурация
 
 Все константы и пути — в `utils/config.py`. Ключевые:
 
 |Константа|Значение|Назначение|
 |-|-|-|
-|`BERT\_MODEL\_NAME`|`deepvk/RuModernBERT-base`|Base model|
-|`BERT\_MAX\_LENGTH`|`1024`|Максимум токенов (поддерживается до 8192)|
-|`CONFIDENCE\_THRESHOLD\_DEFAULT`|`0.75`|Fallback-порог (фактически использован 0.68, см. `comparison.json`)|
-|`AGENT\_LLM\_MODEL`|из `.env`|Модель для LLM-агента|
-|`AGENT\_USE\_CACHE`|`true`|Кэш ответов LLM и Tavily|
-|`BERT\_CALIBRATION\_PATH`|`models/bert/calibration.json`|Температура T|
-|`STAGE3\_COMPARISON\_PATH`|`reports/stage3\_error\_analysis/comparison.json`|Порог и architecture|
+|`BERT_MODEL_NAME`|`deepvk/RuModernBERT-base`|Base model|
+|`BERT_MAX_LENGTH`|`1024`|Максимум токенов (поддерживается до 8192)|
+|`CONFIDENCE_THRESHOLD_DEFAULT`|`0.75`|Fallback-порог (фактически использован 0.68, см. `comparison.json`)|
+|`AGENT_LLM_MODEL`|из `.env`|Модель для LLM-агента|
+|`AGENT_USE_CACHE`|`true`|Кэш ответов LLM и Tavily|
+|`BERT_CALIBRATION_PATH`|`models/bert/calibration.json`|Температура T|
+|`STAGE3_COMPARISON_PATH`|`reports/stage3_error_analysis/comparison.json`|Порог и architecture|
 
-Для нестандартного расположения проекта создайте `utils/config\_local.py`:
+Для нестандартного расположения проекта создайте `utils/config_local.py`:
 
 ```python
-PROJECT\_ROOT = "/path/to/your/project"
+PROJECT_ROOT = "/path/to/your/project"
 ```
 
-\---
-
-## 9\. Структура проекта
+## 9. Структура проекта
 
 ```
-project\_root/
+project_root/
 ├── data/
 │   ├── raw/                          # Исходные данные (JSONL)
 │   └── processed/
-│       ├── train\_baseline.parquet
-│       ├── val\_baseline.parquet
-│       ├── eval\_baseline.parquet     # LOCKED до Stage 5
-│       └── rel\_minus\_baseline.parquet  # OOD (4 703 строки)
+│       ├── train_baseline.parquet
+│       ├── val_baseline.parquet
+│       ├── eval_baseline.parquet     # LOCKED до Stage 5
+│       └── rel_minus_baseline.parquet  # OOD (4 703 строки)
 ├── models/
 │   └── bert/
-│       ├── best\_checkpoint/          # Веса дообученной модели
+│       ├── best_checkpoint/          # Веса дообученной модели
 │       ├── checkpoints/              # Промежуточные чекпоинты
-│       ├── training\_args.json
+│       ├── training_args.json
 │       └── calibration.json          # Температура T, ECE
 ├── predictions/                      # Parquet с предсказаниями по этапам
 ├── reports/
-│   ├── eda\_reports/
-│   ├── stage1\_baseline/
-│   ├── stage2\_bert/
-│   ├── stage3\_error\_analysis/
-│   ├── stage4\_agent/
-│   └── final\_eval/
+│   ├── eda_reports/
+│   ├── stage1_baseline/
+│   ├── stage2_bert/
+│   ├── stage3_error_analysis/
+│   ├── stage4_agent/
+│   └── final_eval/
 ├── notebooks/                        # Основной способ запуска
 │   ├── eda.ipynb
-│   ├── stage1\_baseline.ipynb
-│   ├── stage2\_bert\_finetune.ipynb    # Colab/GPU
-│   ├── stage3\_error\_analysis.ipynb
-│   ├── stage4\_agent.ipynb
-│   ├── stage5a\_bert\_inference.ipynb  # Colab/GPU
-│   └── stage5b\_agent\_loop.ipynb
+│   ├── stage1_baseline.ipynb
+│   ├── stage2_bert_finetune.ipynb    # Colab/GPU
+│   ├── stage3_error_analysis.ipynb
+│   ├── stage4_agent.ipynb
+│   ├── stage5a_bert_inference.ipynb  # Colab/GPU
+│   └── stage5b_agent_loop.ipynb
 ├── utils/
 │   ├── config.py                     # Все константы и пути
-│   ├── data\_loader.py                # build\_combined\_text, make\_org\_text
-│   ├── calibration.py                # fit\_temperature, apply\_temperature, ECE
-│   ├── metrics.py                    # eval\_core, eval\_binary, error\_matrix
-│   ├── predict.py                    # predict\_bert() — единая точка inference
-│   ├── bert\_routing.py               # load\_confidence\_threshold, max\_confidence\_series
-│   ├── agent\_import.py               # Проверка окружения агента
-│   ├── langchain\_compat.py
-│   └── stage1\_baseline.py … stage5\_eval.py
+│   ├── data_loader.py                # build_combined_text, make_org_text
+│   ├── calibration.py                # fit_temperature, apply_temperature, ECE
+│   ├── metrics.py                    # eval_core, eval_binary, error_matrix
+│   ├── predict.py                    # predict_bert() — единая точка inference
+│   ├── bert_routing.py               # load_confidence_threshold, max_confidence_series
+│   ├── agent_import.py               # Проверка окружения агента
+│   ├── langchain_compat.py
+│   └── stage1_baseline.py … stage5_eval.py
 ├── scripts/
-│   └── run\_stage1.py … run\_stage5.py
+│   └── run_stage1.py … run_stage5.py
 ├── agent/                            # Только LLM-агент (LangGraph)
 │   ├── graph.py                      # Граф LangGraph
-│   ├── nodes.py                      # Узлы: bert\_route, decide\_search, search, classify
+│   ├── nodes.py                      # Узлы: bert_route, decide_search, search, classify
 │   ├── state.py
 │   ├── llm.py                        # VseGPT / OpenAI client
 │   ├── search.py                     # Tavily wrapper
-│   ├── prompts.py                    # format\_org\_context
-│   └── search\_cache/
+│   ├── prompts.py                    # format_org_context
+│   └── search_cache/
 ├── environment.yml
-├── known\_project\_limits.txt
+├── known_project_limits.txt
 └── .env
 ```
 
 Ключевые модули `utils/`:
 
-* `data\_loader.py` — единственное место, где собираются `combined\_text` и `org\_text`; одинаковая логика на всех этапах.
-* `predict.py` — единая точка BERT inference для Stage 5A и внешних скриптов: `predict\_bert(queries, org\_texts)` → `{pred, proba1}` с temperature scaling.
-* `bert\_routing.py` — `load\_confidence\_threshold()` читает порог из `comparison.json`; `max\_confidence\_series()` — векторизованный `max(p, 1−p)`.
-* `calibration.py` — `fit\_temperature` (LBFGS), `apply\_temperature`, ECE, reliability plots.
-* `metrics.py` — `eval\_core` (accuracy + macro-F1), `eval\_binary` (+ classification\_report + JSON), `error\_matrix` (BERT-only vs гибрид).
+* `data_loader.py` — единственное место, где собираются `combined_text` и `org_text`; одинаковая логика на всех этапах.
+* `predict.py` — единая точка BERT inference для Stage 5A и внешних скриптов: `predict_bert(queries, org_texts)` → `{pred, proba1}` с temperature scaling.
+* `bert_routing.py` — `load_confidence_threshold()` читает порог из `comparison.json`; `max_confidence_series()` — векторизованный `max(p, 1−p)`.
+* `calibration.py` — `fit_temperature` (LBFGS), `apply_temperature`, ECE, reliability plots.
+* `metrics.py` — `eval_core` (accuracy + macro-F1), `eval_binary` (+ classification_report + JSON), `error_matrix` (BERT-only vs гибрид).
 
-\---
 
-## 10\. Известные ограничения
+## 10. Известные ограничения
 
-Подробнее — [`known\_project\_limits.txt`](known_project_limits.txt).
+Подробнее — [`known_project_limits.txt`](known_project_limits.txt).
 
 **LIMIT-01 — Temperature scaling подобран на val.**  
-Нет отдельного calibration split: val используется и для обучения модели, и для подбора температуры. Следствие: небольшой оптимистичный bias T на eval. Реализация: `utils/calibration.py` → `fit\_temperature` (LBFGS), результат в `BERT\_CALIBRATION\_PATH`.
+Нет отдельного calibration split: val используется и для обучения модели, и для подбора температуры. Следствие: небольшой оптимистичный bias T на eval. Реализация: `utils/calibration.py` → `fit_temperature` (LBFGS), результат в `BERT_CALIBRATION_PATH`.
 
-**LIMIT-02 — `CONFIDENCE\_THRESHOLD` подобран на val.**  
-Нет отдельного held-out set для подбора порога. Порог немного оптимистичен; реальную картину показывает Stage 5. Загрузка: `utils/bert\_routing.load\_confidence\_threshold()` → `comparison.json`.
+**LIMIT-02 — `CONFIDENCE_THRESHOLD` подобран на val.**  
+Нет отдельного held-out set для подбора порога. Порог немного оптимистичен; реальную картину показывает Stage 5. Загрузка: `utils/bert_routing.load_confidence_threshold()` → `comparison.json`.
 
 **LIMIT-03 — Только temperature scaling.**  
 Platt scaling и isotonic regression не применялись: оба метода рискуют переобучиться на val, который уже задействован для обучения модели. ECE после scaling сохранена в `calibration.json`.
 
-**LIMIT-04 — `BERT\_MAX\_LENGTH = 1024`.**  
-Обучение: `padding='max\_length'`; inference: dynamic padding до значения из `training\_args.json`. RuModernBERT поддерживает до 8 192 токенов. При OOM: уменьшить `batch\_size` и/или добавить `gradient\_accumulation\_steps`.
+**LIMIT-04 — `BERT_MAX_LENGTH = 1024`.**  
+Обучение: `padding='max_length'`; inference: dynamic padding до значения из `training_args.json`. RuModernBERT поддерживает до 8 192 токенов. При OOM: уменьшить `batch_size` и/или добавить `gradient_accumulation_steps`.
 
 **LIMIT-05 — LLM-агент недетерминирован.**  
-Результаты могут незначительно различаться между прогонами. Кэш Tavily (`SEARCH\_CACHE\_DIR`) и `AGENT\_USE\_CACHE=true` снижают вариативность при повторных запусках.
+Результаты могут незначительно различаться между прогонами. Кэш Tavily (`SEARCH_CACHE_DIR`) и `AGENT_USE_CACHE=true` снижают вариативность при повторных запусках.
 
-\---
+## 11. Воспроизводимость
 
-## 11\. Воспроизводимость
-
-* **BERT:** зафиксируйте `seed` в `training\_args` (Stage 2). Лучший чекпоинт сохраняется в `models/bert/best\_checkpoint/`.
+* **BERT:** зафиксируйте `seed` в `training_args` (Stage 2). Лучший чекпоинт сохраняется в `models/bert/best_checkpoint/`.
 * **Калибровка и порог:** однократно подбираются на val и фиксируются в `calibration.json` и `comparison.json`. Не пересчитываются на этапах 4–5.
-* **LLM-агент:** включить `AGENT\_USE\_CACHE=true` — повторные запросы к Tavily и LLM возвращают кэшированные ответы из `agent/search\_cache/`.
+* **LLM-агент:** включить `AGENT_USE_CACHE=true` — повторные запросы к Tavily и LLM возвращают кэшированные ответы из `agent/search_cache/`.
 * **Сплиты:** train/val/eval формируются в `notebooks/eda.ipynb` и далее не меняются.
 
-\---
 
-## 12\. Терминология
+## 12. Терминология
 
 |Термин|Определение|
 |-|-|
 |**Гибридная система**|Полный пайплайн: уверенные примеры → BERT, low-confidence → LLM-агент (опционально Tavily). Метрики «hybrid» в отчётах — про эту систему целиком.|
 |**LLM-агент**|Компонент в `agent/` (LangGraph + VseGPT). Обрабатывает только low-confidence примеры после routing.|
-|`bert\_max\_proba`|`max(bert\_proba1, 1 − bert\_proba1)` — уверенность модели, по которой происходит routing.|
-|`agent\_\*` в именах файлов|Исторически: выход LLM-агента или его цикл (в т.ч. `agent\_eval\_preds.parquet` = весь eval гибридной системы).|
-|`hybrid\_\*` в именах файлов|Итог гибридной системы на всём сплите val.|
-|`org\_text`|Текст организации без запроса: `Name \| Address \| Rubric \| Reviews \| Pricelist`. Sequence B в cross-encoder.|
-|`combined\_text`|Полный текст для TF-IDF: `Query: … Address: … Name: … Rubric: … Reviews: … Pricelist: …`.|
-|eval LOCKED|`eval\_baseline.parquet` не используется до Stage 5 — для честной финальной оценки.|
+|`bert_max_proba`|`max(bert_proba1, 1 − bert_proba1)` — уверенность модели, по которой происходит routing.|
+|`agent_*` в именах файлов|Исторически: выход LLM-агента или его цикл (в т.ч. `agent_eval_preds.parquet` = весь eval гибридной системы).|
+|`hybrid_*` в именах файлов|Итог гибридной системы на всём сплите val.|
+|`org_text`|Текст организации без запроса: `Name | Address | Rubric | Reviews | Pricelist`. Sequence B в cross-encoder.|
+|`combined_text`|Полный текст для TF-IDF: `Query: … Address: … Name: … Rubric: … Reviews: … Pricelist: …`.|
+|eval LOCKED|`eval_baseline.parquet` не используется до Stage 5 — для честной финальной оценки.|
 
 
 
