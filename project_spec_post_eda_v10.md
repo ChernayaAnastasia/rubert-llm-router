@@ -1,5 +1,5 @@
 # ТЗ: Этапы проекта после EDA (v10)
-## Yandex Maps Relevance — cross-encoder + temperature scaling + error analysis + гибрид (BERT + LLM)
+## Yandex Maps Relevance — cross-encoder + temperature scaling + error analysis + гибрид (ModernBERT + LLM)
 
 > **Исходная точка:** EDA завершена, артефакты в `PROCESSED_DATA_DIR`:
 > `train_baseline.parquet`, `val_baseline.parquet`, `eval_baseline.parquet`, `rel_minus_baseline.parquet`
