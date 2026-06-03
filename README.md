@@ -450,6 +450,7 @@ project_root/
 │   ├── prompts.py                    # format_org_context
 │   └── search_cache/
 ├── environment.yml
+├── requirements.txt
 ├── known_project_limits.txt
 └── .env
 ```
