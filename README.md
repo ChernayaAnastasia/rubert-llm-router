@@ -8,16 +8,21 @@
 ![LangGraph](https://img.shields.io/badge/LangGraph-0.4.8-green)
 ![License](https://img.shields.io/badge/license-Apache%202.0-lightgrey)
 
-### Основные результаты
+### Основные результаты:
 
 **Eval (Stage 5, n = 4 558)**:
  
-`BERT-only` accuracy: **0.771** macro-F1: **0.771**
+`BERT-only` accuracy: **0.771** | macro-F1: **0.771**
  
-`Hybrid` accuracy: **0.782** macro-F1: **0.781**
+`Hybrid` accuracy: **0.782** | macro-F1: **0.781**
  
 LLM-агент обработал 21.3% примеров (threshold = 0.68) и улучшил accuracy на low-confidence подмножестве с 0.573 до 0.618.
 
+**Val (Stage 5, n = 4 558)**:
+
+`BERT-only` accuracy: **0.7690** | macro-F1: **0.7683**
+
+`Hybrid` accuracy: accuracy: **0.7738** | macro-F1: **0.7725**
 
 ## Содержание
 
