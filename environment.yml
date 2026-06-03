@@ -1,0 +1,37 @@
+name: yandex-relevance-project
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12.2
+  - pip
+  - pip:
+      - pandas==2.3.0
+      - tqdm==4.67.1
+      - python-dotenv==0.21.1
+      - tavily-python==0.7.9
+
+      # langgraph==0.5.1 содержит баг MRO в langgraph.pregel.protocol
+      # (PregelProtocol наследует одновременно ABC и Generic, что вызывает
+      # TypeError на Python 3.12). Откат на 0.4.8 — последняя стабильная версия
+      # без этого бага. API (StateGraph, END, add_conditional_edges) идентично.
+      - langgraph==0.4.8
+
+      - langchain-core>=0.3.67,<1.0.0
+      - openai==1.93.0
+      - jupyter==1.0.0
+      - notebook==7.1.2
+      - matplotlib>=3.7
+      - numpy>=1.26
+      - scikit-learn>=1.4
+      - nltk>=3.8
+      - pyarrow>=15.0
+      - ipykernel>=6.0
+      - seaborn>=0.13
+      - scipy>=1.12
+      - ipywidgets>=8.0
+      - torch>=2.1
+      - transformers>=4.40
+      - datasets>=2.19
+      - accelerate>=0.30
+      - evaluate>=0.4

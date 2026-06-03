@@ -1,0 +1,7 @@
+{
+  "fact_verification": 12,
+  "hard_semantic": 35,
+  "requires_search": 28,
+  "label_noise": 18,
+  "other": 3
+}

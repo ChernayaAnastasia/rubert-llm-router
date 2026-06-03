@@ -1,0 +1,9 @@
+{
+  "method": "temperature_scaling",
+  "temperature": 1.1091078519821167,
+  "nll_before": 0.505035,
+  "nll_after": 0.496745,
+  "ece_before": 0.056391,
+  "ece_after": 0.038949,
+  "fitted_on": "val"
+}

@@ -1,0 +1,40 @@
+# Secrets
+.env
+
+# Optional local path override (utils/config.py imports it if present).
+# utils/config.py — коммитить обязательно (все константы проекта).
+config_local.py
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# LLM agent runtime cache (Tavily)
+agent/search_cache/
+
+# Raw dataset (keep data/processed/ if you want reproducible splits in repo)
+data/raw/
+
+# BERT weights (~575 MB; GitHub limit 100 MB/file) — выложить отдельно (HF Hub / release)
+models/bert/checkpoints/
+models/bert/best_checkpoint/
+
+# В репо остаются: models/bert/calibration.json, training_args.json
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

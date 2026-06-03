@@ -1,0 +1,40 @@
+{
+  "confidence_threshold": 0.68,
+  "error_taxonomy": {
+    "requires_search": 23,
+    "hard_semantic": 17,
+    "fact_verification": 15,
+    "label_noise": 32,
+    "other": 3
+  },
+  "searchable_share": 0.397,
+  "agent_architecture": "BERT -> LLM + Tavily search",
+  "low_confidence": {
+    "threshold": 0.68,
+    "low_confidence_n": 925,
+    "low_confidence_pct": 20.29,
+    "low_confidence_accuracy": 0.5708,
+    "low_confidence_macro_f1": 0.5671,
+    "high_confidence_accuracy": 0.8194,
+    "high_confidence_macro_f1": 0.8191
+  },
+  "ood": {
+    "n_ood": 4703,
+    "bert_pred_dist": {
+      "1": 0.5335,
+      "0": 0.4665
+    },
+    "bert_proba1_median_ood": 0.5433,
+    "bert_proba1_median_val": 0.5584,
+    "confidence_shift": -0.0151
+  },
+  "TF-IDF + LR (reference)": {
+    "val_accuracy": 0.6367,
+    "val_macro_f1": 0.6366
+  },
+  "rubert cross-encoder (T-scaled)": {
+    "val_accuracy": 0.769,
+    "val_macro_f1": 0.7683
+  },
+  "temperature": 1.1091078519821167
+}

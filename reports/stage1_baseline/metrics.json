@@ -1,0 +1,6 @@
+{
+  "model": "TF-IDF + LogisticRegression (reference only)",
+  "val_accuracy": 0.6367,
+  "val_macro_f1": 0.6366,
+  "note": "Lower bound. Not used in downstream pipeline."
+}

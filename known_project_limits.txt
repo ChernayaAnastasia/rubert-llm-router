@@ -1,0 +1,27 @@
+Known limitations (final project)
+
+LIMIT-01: temperature scaling подобран на val (тот же, что для обучения модели).
+  Причина: нет отдельного calibration split.
+  Следствие: небольшой оптимистичный bias T на eval.
+  Реализация: utils/calibration.py — fit_temperature (LBFGS), save_calibration
+  (сохраняет T, NLL до/после, ECE до/после в BERT_CALIBRATION_PATH).
+
+LIMIT-02: CONFIDENCE_THRESHOLD подобран на val.
+  Причина: нет отдельного held-out set для подбора порога.
+  Следствие: threshold немного оптимистичен. Stage 5 покажет реальную картину.
+  Реализация: utils/stage3_error_analysis.py → comparison.json;
+  загрузка порога: utils/bert_routing.load_confidence_threshold().
+
+LIMIT-03: BERT routing использует temperature-scaled softmax.
+  Platt scaling и isotonic regression не применялись — риск переобучения
+  калибровщика на val (val используется и для обучения модели, и для калибровки).
+  ECE после scaling сохранена в BERT_CALIBRATION_PATH.
+
+LIMIT-04: BERT_MAX_LENGTH=1024 в config (обучение: padding=max_length;
+  inference: dynamic padding до max_length из training_args.json).
+  RuModernBERT поддерживает до 8192 токенов; при OOM уменьшить batch_size
+  и/или добавить gradient_accumulation_steps.
+
+LIMIT-05: LLM-агент (AGENT_LLM_MODEL через VseGPT) не детерминирован.
+  Кэш Tavily (SEARCH_CACHE_DIR) и повторные запросы с AGENT_USE_CACHE
+  снижают вариативность при повторных прогонах.

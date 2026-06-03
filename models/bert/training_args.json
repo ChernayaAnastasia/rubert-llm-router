@@ -1,0 +1,15 @@
+{
+  "base_model": "deepvk/RuModernBERT-base",
+  "architecture": "cross-encoder: [CLS] text [SEP] org_text [SEP]",
+  "org_text_cols": "name | address | normalized_main_rubric_name_ru | reviews_summarized | prices_summarized",
+  "truncation": "only_second",
+  "max_length": 1024,
+  "epochs": 5,
+  "batch_size": 8,
+  "lr": 2e-05,
+  "early_stopping_patience": 1,
+  "random_state": 42,
+  "best_val_acc": 0.7689776217639316,
+  "last_macro_f1": 0.7680511514670565,
+  "calibration": "temperature scaling — see calibration.json"
+}

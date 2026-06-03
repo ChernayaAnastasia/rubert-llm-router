@@ -1,0 +1,6 @@
+,Train,Val,Eval
+Documents,21270,4558,4558
+Irrelevant (0),10152,2176,2176
+Relevant (1),11118,2382,2382
+Vocabulary Size,192706,80829,80718
+Total Tokens,6003232,1282737,1281283

@@ -1,0 +1,24 @@
+conda activate yandex-relevance-project
+conda env update -f environment.yml --prune # только если поменяла что-то в файле окружения, то его нужно обновить прежде
+cd /D D:\My_courses\NLP_ODS_2026\yandex_relevance
+
+# Stage 1 — TF-IDF baseline (локально, CPU)
+python scripts/run_stage1.py
+
+# Stage 2 — rubert-tiny2 (Colab T4)
+# pip install -r requirements.txt   # если ещё нет torch/transformers
+python scripts/run_stage2.py
+# Только инференс по уже обученному чекпоинту:
+python scripts/run_stage2.py --skip-train
+
+# Stage 3 — error analysis (локально, CPU; нужны preds Stage 1 и 2)
+python scripts/run_stage3.py
+python scripts/run_stage3.py --threshold 0.75
+
+# Stage 4 — hybrid agent (VseGPT + Tavily; нужны Stage 3 артефакты)
+python scripts/run_stage4.py
+python scripts/run_stage4.py --sample 5
+python scripts/run_stage4.py --sample 50
+
+# Ноутбуки: notebooks/stage1_baseline.ipynb, stage2_bert_finetune.ipynb,
+#           stage2_labse.ipynb, stage3_error_analysis.ipynb, stage4_agent.ipynb

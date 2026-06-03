@@ -1,0 +1,61 @@
+{
+  "model": "deepvk/RuModernBERT-base",
+  "architecture": "cross-encoder: [CLS] text [SEP] org_text [SEP]",
+  "val_accuracy": 0.769,
+  "val_macro_f1": 0.7683,
+  "val_report": {
+    "Irrelevant": {
+      "precision": 0.7625058438522674,
+      "recall": 0.7495404411764706,
+      "f1-score": 0.7559675550405562,
+      "support": 2176.0
+    },
+    "Relevant": {
+      "precision": 0.7747002893757751,
+      "recall": 0.7867338371116709,
+      "f1-score": 0.7806706936054989,
+      "support": 2382.0
+    },
+    "accuracy": 0.7689776217639316,
+    "macro avg": {
+      "precision": 0.7686030666140212,
+      "recall": 0.7681371391440708,
+      "f1-score": 0.7683191243230276,
+      "support": 4558.0
+    },
+    "weighted avg": {
+      "precision": 0.7688786321885981,
+      "recall": 0.7689776217639316,
+      "f1-score": 0.7688773567214894,
+      "support": 4558.0
+    }
+  },
+  "training": {
+    "base_model": "deepvk/RuModernBERT-base",
+    "architecture": "cross-encoder: [CLS] text [SEP] org_text [SEP]",
+    "org_text_cols": "name | address | normalized_main_rubric_name_ru | reviews_summarized | prices_summarized",
+    "truncation": "only_second",
+    "max_length": 1024,
+    "epochs": 5,
+    "batch_size": 8,
+    "lr": 2e-05,
+    "early_stopping_patience": 1,
+    "random_state": 42,
+    "best_val_acc": 0.7689776217639316,
+    "last_macro_f1": 0.7680511514670565,
+    "calibration": "temperature scaling — see calibration.json"
+  },
+  "calibration": {
+    "temperature": 1.1091078519821167,
+    "nll_before": 0.5050347785530807,
+    "nll_after": 0.4967448600880622,
+    "ece_before": 0.05639140981569486,
+    "ece_after": 0.03894895329391449,
+    "calibration_path": "/content/drive/MyDrive/Colab_Notebooks/NLP_ODS_2026/yandex_relevance/models/rubert/calibration.json",
+    "reliability_before_path": "/content/drive/MyDrive/Colab_Notebooks/NLP_ODS_2026/yandex_relevance/reports/stage2_bert/reliability_before_scaling.png",
+    "reliability_after_path": "/content/drive/MyDrive/Colab_Notebooks/NLP_ODS_2026/yandex_relevance/reports/stage2_bert/reliability_after_scaling.png",
+    "val_accuracy": 0.7689776217639316,
+    "val_macro_f1": 0.7683191243230276
+  },
+  "best_val_acc_trainer": 0.769
+}

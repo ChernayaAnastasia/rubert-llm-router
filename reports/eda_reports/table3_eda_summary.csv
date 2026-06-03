@@ -1,0 +1,23 @@
+Item,Value
+Total rows after cleaning,35089
+Noisy duplicates removed,5
+Class 0 (IRRELEVANT),14504
+Class 0.1 (REL_MINUS),4703
+Class 1 (RELEVANT),15882
+reviews_summarized missing,1539
+pricelist_summarized missing,14464
+--- DECISIONS ---,---
+Q1: classes in baseline,2 (0 and 1); class 0.1 excluded from all splits
+Q1: class 0.1 strategy,B3 — exclude (Exp C); saved separately as rel_minus_baseline.parquet
+Q1: evidence for binary task,Exp A macro-F1 = 0.282 (near-uniform confusion); Exp B macro-F1 = 0.290 (≈ random baseline)
+Q2: split rule,70/15/15 stratified split; binary-only labels in all subsets
+Q2: metric,"Primary: Accuracy on {0,1}; Secondary: macro-F1"
+Q3: agent routing,Field presence does not predict model failure (Δ D−A = -0.0171; Exp §6); what needs agent will be assigned via confidence threshold in Stage 3
+Q3: missing field handling,"Placeholder text used: ""No reviews."" / ""No price list."""
+--- BASELINE ARTEFACTS ---,---
+train_baseline.parquet,"21,270 rows | classes {0, 1} | 70% of binary rows | columns: permalink, text, name, address, normalized_main_rubric_name_ru, label, relevance, reviews_summarized, prices_summarized"
+val_baseline.parquet,"4,558 rows | classes {0, 1} | 15% of binary rows | columns: permalink, text, name, address, normalized_main_rubric_name_ru, label, relevance, reviews_summarized, prices_summarized | used for model selection"
+eval_baseline.parquet,"4,558 rows | classes {0, 1} | 15% of binary rows | columns: permalink, text, name, address, normalized_main_rubric_name_ru, label, relevance, reviews_summarized, prices_summarized | LOCKED — final evaluation only"
+rel_minus_baseline.parquet,"4,703 rows | classes {0} | excluded from training | columns: permalink, text, name, address, normalized_main_rubric_name_ru, label, relevance, reviews_summarized, prices_summarized | used for OOD analysis in Stage 3"
+Label balance (train),"Irrelevant (0): 10,152 (47.7%) | Relevant (1): 11,118 (52.3%)"
+Label balance (val),"Irrelevant (0): 2,176 (47.7%) | Relevant (1): 2,382 (52.3%)"

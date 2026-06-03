@@ -1,0 +1,26 @@
+{
+  "bert_only": {
+    "accuracy": 0.7714,
+    "macro_f1": 0.7709
+  },
+  "hybrid": {
+    "accuracy": 0.782,
+    "macro_f1": 0.7806
+  },
+  "threshold": 0.68,
+  "eval_size": 4558,
+  "low_conf_share": 0.2128,
+  "routed_to_agent_share": 0.2128,
+  "agent_acc_on_low_conf": 0.6177,
+  "bert_low_conf_acc_baseline": 0.5732,
+  "bert_low_conf_f1_baseline": 0.571,
+  "search_used_share": 0.1345,
+  "acc_with_search": 0.6166,
+  "acc_without_search": 0.5658,
+  "parse_error_share": 0.0068,
+  "total_time_min": 158.6,
+  "known_limitations": [
+    "Temperature scaling fitted on val — slight optimistic bias on eval",
+    "CONFIDENCE_THRESHOLD chosen on val (Stage 3)"
+  ]
+}

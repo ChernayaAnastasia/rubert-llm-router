@@ -1,0 +1,15 @@
+{
+  "n_total": 4527,
+  "counts": {
+    "both_correct": 3326,
+    "only_hybrid_correct": 214,
+    "only_bert_correct": 171,
+    "both_wrong": 816
+  },
+  "shares": {
+    "both_correct": 0.7347,
+    "only_hybrid_correct": 0.0473,
+    "only_bert_correct": 0.0378,
+    "both_wrong": 0.1803
+  }
+}

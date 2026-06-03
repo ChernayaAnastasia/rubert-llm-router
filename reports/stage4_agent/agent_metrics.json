@@ -1,0 +1,28 @@
+{
+  "threshold": 0.68,
+  "llm_model": "deepseek/deepseek-v4-flash-alt (VseGPT)",
+  "search_provider": "Tavily",
+  "bert_only_acc": 0.769,
+  "bert_only_macro_f1": 0.7683,
+  "hybrid_acc": 0.7738,
+  "hybrid_macro_f1": 0.7725,
+  "routed_to_agent_share": 0.20293988591487494,
+  "search_used_share": 0.6518918918918919,
+  "agent_acc_on_low_conf": 0.5849,
+  "bert_low_conf_acc_baseline": 0.5708,
+  "bert_low_conf_f1_baseline": 0.5671,
+  "acc_with_search": 0.5737976782752903,
+  "acc_without_search": 0.5186335403726708,
+  "total_time_min": 137.85,
+  "latency_mean_sec": 8.636,
+  "latency_median_sec": 5.939,
+  "latency_with_search_sec": 6.43,
+  "latency_without_search_sec": 4.555,
+  "total_prompt_tokens": 2073102,
+  "total_completion_tokens": 28321,
+  "actual_cost_rub": 85.19,
+  "known_limitations": [
+    "LLM agent receives query, name, address, rubric, reviews, pricelist (spec v9)",
+    "Routing threshold from Stage 3; BERT probs are temperature-scaled"
+  ]
+}

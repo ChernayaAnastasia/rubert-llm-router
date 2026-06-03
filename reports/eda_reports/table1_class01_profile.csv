@@ -1,0 +1,4 @@
+,n,reviews missing %,pricelist missing %,both missing %,review text len (median)
+Class 0 (IRRELEVANT),14504.0,5.1,42.2,4.6,1677.0
+Class 0.1 (REL_MINUS),4703.0,6.8,43.1,6.4,1624.0
+Class 1 (RELEVANT),15882.0,3.0,39.8,2.7,1667.0
