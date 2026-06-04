@@ -63,7 +63,7 @@ Source [data](https://disk.yandex.ru/d/6d5hFHvpAZjQdw) provided by Yandex for ed
 
 The hybrid system has two components:
 
-- **BERT (cross-encoder)** — `deepvk/RuModernBERT-base`, fine-tuned as a binary classifier on pairs `[query, org_text]` ([Nogueira & Cho, 2019](https://arxiv.org/abs/1901.04085)). Processes all examples and outputs calibrated probabilities ([Guo et al., 2017](https://arxiv.org/abs/1706.04599)).
+- **BERT (cross-encoder)** — [`deepvk/RuModernBERT-base`](https://huggingface.co/deepvk/RuModernBERT-base), fine-tuned as a binary classifier on pairs `[query, org_text]` ([Nogueira & Cho, 2019](https://arxiv.org/abs/1901.04085)). Processes all examples and outputs calibrated probabilities ([Guo et al., 2017](https://arxiv.org/abs/1706.04599)).
 - **LLM agent** (`agent/`, LangGraph + VseGPT) — invoked only for low-confidence examples, optionally uses Tavily web search ([Ding et al., 2024](https://arxiv.org/abs/2404.14618)).
 
 ```
