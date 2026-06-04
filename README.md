@@ -10,12 +10,12 @@ Hybrid system: **RuModernBERT-base** cross-encoder handles confident predictions
 
 ## Results
 
-| Split | System | Accuracy | Macro-F1 |
-|---|---|---|---|
-| Eval (n = 4,558) | BERT-only | 0.771 | 0.771 |
-| Eval (n = 4,558) | **Hybrid** | **0.782** | **0.781** |
-| Val (n = 4,558) | BERT-only | 0.769 | 0.768 |
-| Val (n = 4,558) | **Hybrid** | **0.774** | **0.773** |
+| Split | System | Accuracy | Macro-F1 | Note |
+|---|---|---|---|---|
+| Val (n = 4,558) | BERT-only | 0.769 | 0.768 | Threshold tuned here |
+| Val (n = 4,558) | **Hybrid** | **0.774** | **0.773** | |
+| Eval (n = 4,558) | BERT-only | 0.771 | 0.771 | +0.2 pp vs val |
+| Eval (n = 4,558) | **Hybrid** | **0.782** | **0.781** | **+0.8 pp vs val** |
 
 The LLM agent processed 21.3% of examples (threshold = 0.68) and improved accuracy on the low-confidence subset from 0.573 to 0.618.
 
@@ -393,7 +393,7 @@ Artifacts:
 **Modules:** `utils/stage4_agent.py` (orchestration) + `agent/` (LLM agent) | **Notebook:** `notebooks/stage4_agent.ipynb`
 
 ```bash
-python scripts/run_stage4.py [--sample 50] [--sleep 0.2] [--model MODEL_NAME]
+python scripts/run_stage4.py [--sample 50] [--sleep 0.1] [--model MODEL_NAME]
 ```
 
 Input: `predictions/val_merged_preds.parquet` (preferred) or `bert_val_preds.parquet` + `enrich_bert_predictions()`. Threshold is read from `comparison.json` via `utils/bert_routing.load_confidence_threshold()`.
@@ -548,10 +548,11 @@ See [`known_project_limits.txt`](known_project_limits.txt) for full details.
 No separate calibration split: val is used for both model training and temperature selection. This introduces a small optimistic bias in T on eval. Implementation: `utils/calibration.py` → `fit_temperature` (LBFGS), result saved to `BERT_CALIBRATION_PATH`.
 
 **LIMIT-02 — `CONFIDENCE_THRESHOLD` selected on val.**  
-No separate held-out set for threshold tuning. The threshold is slightly optimistic; Stage 5 shows the real picture. Loading: `utils/bert_routing.load_confidence_threshold()` → `comparison.json`.
+No separate held-out set for threshold tuning, which could introduce a slight optimistic bias. In practice, eval metrics matched or slightly exceeded val
+(accuracy 0.782 vs 0.774 for the hybrid), suggesting the threshold generalized well to unseen data. Stage 5 shows the real picture. Loading: `utils/bert_routing.load_confidence_threshold()` → `comparison.json`.
 
 **LIMIT-03 — Temperature scaling only.**  
-Platt scaling and isotonic regression were not used: both risk overfitting on val, which is already used for model training. ECE after scaling is saved in `calibration.json`.
+Platt scaling and isotonic regression were not used: both risk overfitting on val, which is already used for model training. (In practice, no signs of overfitting on val.) ECE after scaling is saved in `calibration.json`.
 
 **LIMIT-04 — `BERT_MAX_LENGTH = 1024`.**  
 Training: `padding='max_length'`; inference: dynamic padding up to value from `training_args.json`. RuModernBERT supports up to 8,192 tokens. On OOM: reduce `batch_size` and/or add `gradient_accumulation_steps`.
@@ -579,7 +580,7 @@ Results may vary slightly between runs. Tavily cache (`SEARCH_CACHE_DIR`) and `A
 | `bert_max_proba` | `max(bert_proba1, 1 − bert_proba1)` — model confidence used for routing. |
 | `agent_*` file names | Historically: LLM agent output or its loop (including `agent_eval_preds.parquet` = full eval hybrid output). |
 | `hybrid_*` file names | Full hybrid system output over the entire val split. |
-| `org_text` | Organization description without the query: `Name \| Address \| Rubric \| Reviews \| Pricelist`. Sequence B in the cross-encoder. |
+| `org_text` | Organization description without the query: `Name | Address | Rubric | Reviews | Pricelist`. Sequence B in the cross-encoder. |
 | `combined_text` | Full text for TF-IDF: `Query: … Address: … Name: … Rubric: … Reviews: … Pricelist: …`. |
 | eval LOCKED | `eval_baseline.parquet` is not used until Stage 5 — for an honest final evaluation. |
 
