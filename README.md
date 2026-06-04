@@ -165,7 +165,7 @@ Raw data in JSONL format is in `data/raw/` (`DATA_PATH` in `utils/config.py`). E
 
 Missing values in `COL_REVIEWS` (~4%) and `COL_PRICELIST` (~41%) are not dropped: the association between missingness and class label is statistically weak (Cramér's V < 0.1). LLM agent routing is also not based on field presence — accuracy when "both fields are empty" is no worse than with full context (Δ ≈ −0.02 per EDA).
 
-### Splits class distribution
+### Splits class distribution of processed data:
 ![](reports/eda_reports/fig11_split_class_balance.png)
 
 ### Text construction at runtime (`utils/data_loader.py`)
