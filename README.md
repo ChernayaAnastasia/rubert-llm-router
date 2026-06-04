@@ -98,6 +98,37 @@ Input pair (query, org_text)
 
 > **Note:** `agent/` contains only the LLM agent code (LangGraph graph, nodes, prompts). Orchestration of the full hybrid system (BERT routing + agent invocation + final parquet assembly) is implemented in `utils/stage4_agent.py` and `utils/stage5_agent.py`. Files prefixed `agent_*` in `predictions/` are LLM agent outputs; `hybrid_*` files are the full hybrid system output over the entire split.
 
+**Training configuration (actual run, Google Colab T4) for RuModernBERT baseline:**
+
+| Parameter | Value |
+|---|---|
+| Environment | Google Colab, Tesla T4 GPU |
+| Epochs requested | 5 |
+| Epochs completed | **2** (early stopping, patience = 1) |
+| Train batch size | **8** |
+| Eval batch size | **16** |
+| Learning rate | 2e-5 |
+| Weight decay | 0.01 |
+| Warmup ratio | 0.1 |
+| Mixed precision | fp16 |
+| Best model criterion | val accuracy |
+
+**Training log:**
+
+| Epoch | Train Loss | Val Loss | Accuracy | Macro-F1 |
+|---|---|---|---|---|
+| 1 | 0.5567 | 0.5050 | 0.7690 | 0.7683 |
+| 2 | 0.4469 | 0.5488 | 0.7685 | 0.7681 |
+
+Early stopping triggered after epoch 2 (val loss increased, accuracy did not improve).
+
+**Temperature scaling results:**
+
+| Metric | Before | After |
+|---|---|---|
+| T | — | **1.1091** |
+| NLL | 0.5050 | 0.4967 |
+| ECE | 0.0564 | **0.0389** |
 ---
 
 ## 3. Detailed Results
