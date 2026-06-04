@@ -6,7 +6,7 @@ Hybrid system: **RuModernBERT-base** cross-encoder handles confident predictions
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![HuggingFace](https://img.shields.io/badge/🤗-Transformers-yellow)
 ![LangGraph](https://img.shields.io/badge/LangGraph-0.4.8-green)
-![License](https://img.shields.io/badge/license-Apache%202.0-lightgrey)
+![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
 ## Results
 
