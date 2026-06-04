@@ -33,6 +33,7 @@ The LLM agent processed 21.3% of examples (threshold = 0.68) and improved accura
 10. [Known Limitations](#10-known-limitations)
 11. [Reproducibility](#11-reproducibility)
 12. [Terminology](#12-terminology)
+13. [Author](#13-author)
 
 ---
 
@@ -550,3 +551,8 @@ Results may vary slightly between runs. Tavily cache (`SEARCH_CACHE_DIR`) and `A
 | `org_text` | Organization description without the query: `Name \| Address \| Rubric \| Reviews \| Pricelist`. Sequence B in the cross-encoder. |
 | `combined_text` | Full text for TF-IDF: `Query: … Address: … Name: … Rubric: … Reviews: … Pricelist: …`. |
 | eval LOCKED | `eval_baseline.parquet` is not used until Stage 5 — for an honest final evaluation. |
+
+
+## 13. Author
+
+**Chernaya Anastasia** - [Telegram](https://t.me/ChernayaAnastasia), [GitHub](https://github.com/ChernayaAnastasia)
