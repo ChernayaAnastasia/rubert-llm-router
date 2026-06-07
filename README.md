@@ -390,7 +390,7 @@ Artifacts:
 
 ### Stage 4 — Hybrid System on Val
 
-**Modules:** `utils/stage4_agent.py` (orchestration) + `agent/` (LLM agent) | **Notebook:** `notebooks/stage4_agent.ipynb`
+**Modules:** `utils/stage4_agent.py` (orchestration) + `agent/` (LLM agent) | **Notebook:** [`notebooks/stage4_agent.ipynb`](https://github.com/ChernayaAnastasia/rubert-llm-router/blob/main/notebooks/stage4_agent.ipynb)
 
 ```bash
 python scripts/run_stage4.py [--sample 50] [--sleep 0.1] [--model MODEL_NAME]
@@ -416,7 +416,7 @@ Artifacts:
 
 The stage is split into two parts that can run on separate machines.
 
-**Stage 5A — BERT inference** (`utils/stage5_bert.py`, GPU/Colab):
+**Stage 5A — BERT inference** (`utils/stage5_bert.py` | **Notebook**: [notebooks/stage5a_bert_inference.ipynb](https://github.com/ChernayaAnastasia/rubert-llm-router/blob/main/notebooks/stage5a_bert_inference.ipynb), GPU/Colab):
 
 ```bash
 python scripts/run_stage5.py --bert-only
@@ -424,7 +424,7 @@ python scripts/run_stage5.py --bert-only
 
 Reads `eval_baseline.parquet`, builds `org_text`, applies the model with calibrated temperature → `predictions/bert_eval_preds.parquet`.
 
-**Stage 5B — hybrid system on eval** (`utils/stage5_agent.py`):
+**Stage 5B — hybrid system on eval** (`utils/stage5_agent.py` | **Notebook**: [notebooks/stage5b_agent_loop.ipynb](https://github.com/ChernayaAnastasia/rubert-llm-router/blob/main/notebooks/stage5b_agent_loop.ipynb)):
 
 ```bash
 python scripts/run_stage5.py --agent-only
