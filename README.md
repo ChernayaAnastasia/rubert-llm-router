@@ -330,7 +330,7 @@ TF-IDF (50k features, ngram 1–2, sublinear TF) + LogisticRegression on `combin
 
 ### Stage 2 — Fine-tune RuModernBERT + Temperature Scaling
 
-**Module:** `utils/stage2_bert.py` | **Notebook:** `notebooks/stage2_bert_finetune.ipynb` (Colab/GPU)
+**Module:** `utils/stage2_bert.py` | **Notebook:** [`notebooks/stage2_bert_finetune.ipynb`](https://github.com/ChernayaAnastasia/rubert-llm-router/blob/main/notebooks/stage2_bert_finetune.ipynb) (Colab/GPU)
 
 ```bash
 python scripts/run_stage2.py [--epochs 3] [--batch-size 16] [--lr 2e-5]
