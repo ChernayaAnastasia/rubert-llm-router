@@ -306,7 +306,7 @@ python scripts/run_stage5.py --agent-only  # 5B: hybrid on eval
 
 ### Stage 0 — EDA
 
-**Notebook:** `notebooks/eda.ipynb`  
+**Notebook:** [`notebooks/eda.ipynb`](https://nbviewer.org/github/ChernayaAnastasia/rubert-llm-router/blob/main/notebooks/eda.ipynb) 
 **Artifacts:** `data/processed/*.parquet`, `reports/eda_reports/`, `reports/eda_reports/table3_eda_summary.csv`
 
 Exploratory data analysis, duplicate removal, justification of the binary formulation, split construction, and fixing of metrics and key project decisions.
@@ -315,7 +315,7 @@ Exploratory data analysis, duplicate removal, justification of the binary formul
 
 ### Stage 1 — TF-IDF Baseline
 
-**Module:** `utils/stage1_baseline.py` | **Notebook:** `notebooks/stage1_baseline.ipynb`  
+**Module:** `utils/stage1_baseline.py` | **Notebook:** [`notebooks/stage1_baseline.ipynb`](https://nbviewer.org/github/ChernayaAnastasia/rubert-llm-router/blob/main/notebooks/stage1_baseline.ipynb)  
 **Runtime:** ~20 min (CPU)
 
 ```bash
@@ -364,7 +364,7 @@ Key artifacts:
 
 ### Stage 3 — Error Analysis and Routing Threshold
 
-**Module:** `utils/stage3_error_analysis.py` | **Notebook:** `notebooks/stage3_error_analysis.ipynb`  
+**Module:** `utils/stage3_error_analysis.py` | **Notebook:** [`notebooks/stage3_error_analysis.ipynb`](https://github.com/ChernayaAnastasia/rubert-llm-router/blob/main/notebooks/stage3_error_analysis.ipynb)  
 **Runtime:** ~2–3 h (including manual labeling)
 
 ```bash
